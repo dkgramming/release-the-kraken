@@ -1,4 +1,6 @@
-#define N 10
+#include <stdio.h>
+
+#define N 4
 
 double A[N][N] = {
   { 35675.42, 15203.36, 46284.07, 63553.85 },
@@ -32,8 +34,31 @@ void ge(double A[N][N], double b[N], double y[N]) {
   }
 }
 
+void print1Darray(double X[N]) {
+	for (int j = 0; j < N; ++j) {
+		printf("%f\n", X[j]);
+	}
+	printf("\n");
+}
+
+void print2Darray(double X[N][N]) {
+  for (int i = 0; i < N; ++i) {
+		for (int j = 0; j < N; ++j) {
+			printf("%f\t", X[i][j]);
+		}
+		printf("\n");
+  }
+	printf("\n");
+}
+
 int main(int argc, char *argv[]) {
+	print2Darray(A);
+  print1Darray(b);
+  print1Darray(y);
   ge(A, b, y);
+	print2Darray(A);
+	print1Darray(b);
+  print1Darray(y);
 
   return 0;
 }
