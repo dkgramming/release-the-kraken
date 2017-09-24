@@ -3,13 +3,6 @@
 
 #define N 3
 
-double A[N][N] = {
-  { 1, 1, -1 },
-  { 0, 1, 3 },
-  { -1, 0, -2 }
-};
-
-double b[N] = { 9, 3, 2 };
 double y[N];
 double x[N];
 
@@ -68,32 +61,41 @@ void backSub(double U[N][N], double x[N], double y[N]) {
 
 int main(int argc, char *argv[]) {
   /* Validate arguments */
-  if (argc != 5) {
-    printf("Error: 4 arguments expected.\n");
-    printf("Usage: ./GE <N> <A> <b> <tc>\n");
-    printf("\tN - dimension of matrix A and vector b\n");
-    printf("\tA - matrix A\n");
-    printf("\tb - vector b\n");
-    printf("\ttc - number of threads\n");
+  if (argc != 3) {
+    printf("Error: 2 arguments expected.\n");
+    printf("Usage: ./GE <input> <thread_count>\n");
     exit(1);
   }
 
   /* Open file */
   double d;
   FILE *pFile;
+  pFile = fopen(argv[1], "r");
+
+  /* Parse matrix dimension */
+  int M;
+  fscanf(pFile, "%d", &M);
 
   /* Parse matrix A */
-  int M = atoi(argv[1]);
   double (*A)[M] = malloc(sizeof(double[M][M]));
-  pFile = fopen(argv[2], "r");
 
   for (int i=0; i<M; ++i) {
     for (int j=0; j<M; ++j) {
       fscanf(pFile, "%lf", &d);
-      printf("A[%d][%d] = %f\n", i, j, d);
       A[i][j] = d;
     }
   }
+
+  /* Parse vector b */
+  double *b = malloc(sizeof(double[M]));
+
+  for (int j=0; j<M; ++j) {
+    fscanf(pFile, "%lf", &d);
+    b[j] = d;
+  }
+
+  /* Close file */
+  fclose(pFile);
 
   ge(A, b, y);
 	print1Darray(y);
