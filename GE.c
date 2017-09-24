@@ -1,16 +1,33 @@
 #include <stdio.h>
 
-#define N 4
+#define N 3
 
 double A[N][N] = {
-  { 35675.42, 15203.36, 46284.07, 63553.85 },
-	{ 7875.82,  63482.87, 49593.29, 43800.31 },
-	{ 51753.19, 30508.30, 27495.50, 51528.23 },
-	{ 22011.23, 64840.39, 22470.65, 42213.57 }
+  { 1, 1, -1 },
+  { 0, 1, 3 },
+  { -1, 0, -2 }
 };
 
-double b[N] = { 57508.19, 39740.80, 45836.48, 56352.48 };
-double y[N] = { 0.0, 0.0, 0.0, 0.0 };
+double b[N] = { 9, 3, 2 };
+double y[N];
+double x[N];
+
+void print1Darray(double X[N]) {
+	for (int j = 0; j < N; ++j) {
+		printf("%f\n", X[j]);
+	}
+	printf("\n");
+}
+
+void print2Darray(double X[N][N]) {
+  for (int i = 0; i < N; ++i) {
+		for (int j = 0; j < N; ++j) {
+			printf("%f\t", X[i][j]);
+		}
+		printf("\n");
+  }
+	printf("\n");
+}
 
 void ge(double A[N][N], double b[N], double y[N]) {
   int i, j, k;
@@ -34,31 +51,22 @@ void ge(double A[N][N], double b[N], double y[N]) {
   }
 }
 
-void print1Darray(double X[N]) {
-	for (int j = 0; j < N; ++j) {
-		printf("%f\n", X[j]);
-	}
-	printf("\n");
-}
+void backSub(double U[N][N], double x[N], double y[N]) {
+	int i, k;
 
-void print2Darray(double X[N][N]) {
-  for (int i = 0; i < N; ++i) {
-		for (int j = 0; j < N; ++j) {
-			printf("%f\t", X[i][j]);
-		}
-		printf("\n");
+  for (k = N - 1; k >= 0; --k) {
+		x[k] = y[k];
+
+		for (i = k - 1; i >= 0; --i) {
+			y[i] = y[i] - x[k] * U[i][k];
+    }
   }
-	printf("\n");
 }
 
 int main(int argc, char *argv[]) {
-	print2Darray(A);
-  print1Darray(b);
-  print1Darray(y);
   ge(A, b, y);
-	print2Darray(A);
-	print1Darray(b);
-  print1Darray(y);
-
+	print1Darray(y);
+	backSub(A, x, y);
+	print1Darray(x);
   return 0;
 }
