@@ -31,24 +31,26 @@ void print2Darray(double X[N][N]) {
 
 void ge(double A[N][N], double b[N], double y[N]) {
   int i, j, k;
-
-  for (k = 0; k < N; ++k) {
+  /* begin */
+  for (k = 0; k < N; ++k) {                     /* Outer loop */
+    /* begin */
     for (j = k + 1; j < N; ++j) {
-      A[k][j] = A[k][j] / A[k][k];
+      A[k][j] = A[k][j] / A[k][k];              /* Division step */
     }
 
     y[k] = b[k] / A[k][k];
     A[k][k] = 1;
 
     for (i = k + 1; i < N; ++i) {
-      for (j = k + 2; j < N; ++j) {
-        A[i][j] = A[i][j] - A[i][k] * A[k][j];
+    /* begin */
+      for (j = k + 1; j < N; ++j) {
+        A[i][j] = A[i][j] - A[i][k] * A[k][j];  /* Elimination step */
       }
 
       b[i] = b[i] - A[i][k] * y[k];
       A[i][k] = 0;
     }
-  }
+  }                                             /* Outer loop */
 }
 
 void backSub(double U[N][N], double x[N], double y[N]) {
