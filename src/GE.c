@@ -16,6 +16,14 @@ void * divisionWorker(void *arg) {
   td->A[td->k][td->j] = td->A[td->k][td->j] / td->A[td->k][td->k];
 }
 
+void * eliminationWorker(void *arg) {
+  threadData_t *td = (threadData_t *)arg;
+
+  td->A[td->i][td->j] = td->A[td->i][td->j] - 
+                        td->A[td->i][td->k] * 
+                        td->A[td->k][td->j];
+}
+
 void print1Darray(double *X, int N) {
 	for (int j = 0; j < N; ++j) {
 		printf("%f\n", X[j]);
@@ -58,7 +66,14 @@ void ge(double **A, double *b, double *y, int N) {
     for (i = k + 1; i < N; ++i) {
     /* begin */
       for (j = k + 1; j < N; ++j) {
-        A[i][j] = A[i][j] - A[i][k] * A[k][j];  /* Elimination step */
+        arg[j].i = i;
+        arg[j].j = j;
+        arg[j].k = k;
+        arg[j].A = A;
+        pthread_create(&thread[j], NULL, eliminationWorker, (void *)(arg+j));
+      }
+      for (j = k + 1; j < N; ++j) {
+        pthread_join(thread[j], NULL);
       }
 
       b[i] = b[i] - A[i][k] * y[k];
