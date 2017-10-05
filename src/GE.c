@@ -36,7 +36,7 @@ void print2Darray(double **X, int N) {
 void ge(double **A, double *b, double *y, int N) {
   int i, j, k;
   pthread_t *thread = (pthread_t *)malloc(N * sizeof(pthread_t));
-  threadData_t *arg = (threadData_t *)malloc(N * sizeof(pthread_t));
+  threadData_t *arg = (threadData_t *)malloc(N * sizeof(threadData_t));
 
   /* begin */
   for (k = 0; k < N; ++k) {                     /* Outer loop */
