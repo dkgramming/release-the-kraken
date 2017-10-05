@@ -92,7 +92,7 @@ void backSub(double **U, double *x, double *y, int N) {
 
 int main(int argc, char *argv[]) {
   /* Validate arguments */
-  if (argc != 2) {
+  if (argc != 3) {
     printf("Error: 2 arguments expected.\n");
     printf("Usage: ./GE <input>\n");
     exit(1);
@@ -133,7 +133,9 @@ int main(int argc, char *argv[]) {
   double *y = malloc(sizeof(double[M]));
   double *x = malloc(sizeof(double[M]));
 
-  ge(A, b, y, M);
+  int numberOfThreads = atoi(argv[2]);
+
+  ge(A, b, y, M, numberOfThreads);
 	backSub(A, x, y, M);
 	print1Darray(x, M);
 
