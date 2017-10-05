@@ -49,27 +49,13 @@ void print2Darray(double **X, int N) {
 	printf("\n");
 }
 
-void ge(double **A, double *b, double *y, int N, int numberOfThreads) {
+void ge(double **A, double *b, double *y, int N, int t) {
   int i, j, k;
-  int elementsPerThread = N / numberOfThreads;
-  
-  pthread_t *thread = (pthread_t *)malloc(numberOfThreads * sizeof(pthread_t));
-  threadData_t *arg = (threadData_t *)malloc(numberOfThreads * sizeof(threadData_t));
-
   /* begin */
   for (k = 0; k < N; ++k) {                     /* Outer loop */
     /* begin */
-    for (int t = 0; t < numberOfThreads; ++t) {
-      arg[t].jStart = (t * elementsPerThread) + (k + 1);
-      arg[t].count = elementsPerThread;
-      arg[t].k = k;
-      arg[t].A = A;
-      arg[t].N = N;
-      arg[t].threadIndex = t;
-      pthread_create(&thread[t], NULL, divisionWorker, (void *)(arg+t));
-    }
-    for (int t = 0; t < numberOfThreads; ++t) {
-      pthread_join(thread[t], NULL);
+    for (j = k + 1; j < N; ++j) {
+      A[k][j] = A[k][j] / A[k][k];              /* Division step */
     }
 
     y[k] = b[k] / A[k][k];
@@ -77,19 +63,8 @@ void ge(double **A, double *b, double *y, int N, int numberOfThreads) {
 
     for (i = k + 1; i < N; ++i) {
     /* begin */
-      
-      for (int t = 0; t < numberOfThreads; ++t) {
-        arg[t].jStart = (t * elementsPerThread) + (k + 1);
-        arg[t].count = elementsPerThread;
-        arg[t].i = i;
-        arg[t].k = k;
-        arg[t].A = A;
-        arg[t].N = N;
-        arg[t].threadIndex = t;
-        pthread_create(&thread[t], NULL, eliminationWorker, (void *)(arg+t));
-      }
-      for (int t = 0; t < numberOfThreads; ++t) {
-        pthread_join(thread[t], NULL);
+      for (j = k + 1; j < N; ++j) {
+        A[i][j] = A[i][j] - A[i][k] * A[k][j];  /* Elimination step */
       }
 
       b[i] = b[i] - A[i][k] * y[k];
