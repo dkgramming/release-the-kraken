@@ -135,7 +135,6 @@ int main(int argc, char *argv[]) {
 
   ge(A, b, y, M, numberOfThreads);
 	backSub(A, x, y, M);
-	print1Darray(x, M);
 
   free(A);
   free(b);
