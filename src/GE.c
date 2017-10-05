@@ -21,6 +21,17 @@ void * divisionWorker(void *arg) {
   }
 }
 
+void * eliminationWorker(void *arg) {
+  threadData_t *td = (threadData_t *)arg;
+  
+  for (int j=td->jStart; j < td->N && j < (td->jStart+td->count); ++j) {
+    /* A[i][j] = A[i][j] - A[i][k] * A[k][j]; */
+    td->A[td->i][j] = td->A[td->i][j] - 
+                      td->A[td->i][td->k] * td->A[td->k][j];
+  }
+
+}
+
 void print1Darray(double *X, int N) {
 	for (int j = 0; j < N; ++j) {
 		printf("%f\n", X[j]);
@@ -66,8 +77,19 @@ void ge(double **A, double *b, double *y, int N, int numberOfThreads) {
 
     for (i = k + 1; i < N; ++i) {
     /* begin */
-      for (j = k + 1; j < N; ++j) {
-        A[i][j] = A[i][j] - A[i][k] * A[k][j];  /* Elimination step */
+      
+      for (int t = 0; t < numberOfThreads; ++t) {
+        arg[t].jStart = (t * elementsPerThread) + (k + 1);
+        arg[t].count = elementsPerThread;
+        arg[t].i = i;
+        arg[t].k = k;
+        arg[t].A = A;
+        arg[t].N = N;
+        arg[t].threadIndex = t;
+        pthread_create(&thread[t], NULL, eliminationWorker, (void *)(arg+t));
+      }
+      for (int t = 0; t < numberOfThreads; ++t) {
+        pthread_join(thread[t], NULL);
       }
 
       b[i] = b[i] - A[i][k] * y[k];
