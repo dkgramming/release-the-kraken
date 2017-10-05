@@ -69,14 +69,7 @@ void ge(double **A, double *b, double *y, int N, int numberOfThreads) {
     for (i = k + 1; i < N; ++i) {
     /* begin */
       for (j = k + 1; j < N; ++j) {
-        arg[j].i = i;
-        arg[j].j = j;
-        arg[j].k = k;
-        arg[j].A = A;
-        pthread_create(&thread[j], NULL, eliminationWorker, (void *)(arg+j));
-      }
-      for (j = k + 1; j < N; ++j) {
-        pthread_join(thread[j], NULL);
+        A[i][j] = A[i][j] - A[i][k] * A[k][j];  /* Elimination step */
       }
 
       b[i] = b[i] - A[i][k] * y[k];
