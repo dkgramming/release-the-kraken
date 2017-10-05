@@ -4,24 +4,23 @@
 
 typedef struct {
   int i;
-  int j;
+  int jStart;
   int k;
+  int N;
+  int count;
+  int threadIndex;
   double **A;
 } threadData_t;
 
 void * divisionWorker(void *arg) {
   threadData_t *td = (threadData_t *)arg;
   
-  /* A[k][j] = A[k][j] / A[k][k]; */             
-  td->A[td->k][td->j] = td->A[td->k][td->j] / td->A[td->k][td->k];
-}
-
-void * eliminationWorker(void *arg) {
-  threadData_t *td = (threadData_t *)arg;
-
-  td->A[td->i][td->j] = td->A[td->i][td->j] - 
-                        td->A[td->i][td->k] * 
-                        td->A[td->k][td->j];
+  for (int j=td->jStart; j < td->N && j < (td->jStart+td->count); ++j) {
+    /* A[k][j] = A[k][j] / A[k][k]; */             
+    printf("[Thread %d] ", td->threadIndex);
+    printf("A[%d][%d] = A[%d][%d] / A[%d][%d]\n", td->k, j, td->k, j, td->k, td->k);
+    td->A[td->k][j] = td->A[td->k][j] / td->A[td->k][td->k];
+  }
 }
 
 void print1Darray(double *X, int N) {
@@ -41,23 +40,27 @@ void print2Darray(double **X, int N) {
 	printf("\n");
 }
 
-void ge(double **A, double *b, double *y, int N) {
+void ge(double **A, double *b, double *y, int N, int numberOfThreads) {
   int i, j, k;
-  pthread_t *thread = (pthread_t *)malloc(N * sizeof(pthread_t));
-  threadData_t *arg = (threadData_t *)malloc(N * sizeof(threadData_t));
+  int elementsPerThread = N / numberOfThreads;
+  
+  pthread_t *thread = (pthread_t *)malloc(numberOfThreads * sizeof(pthread_t));
+  threadData_t *arg = (threadData_t *)malloc(numberOfThreads * sizeof(threadData_t));
 
   /* begin */
   for (k = 0; k < N; ++k) {                     /* Outer loop */
     /* begin */
-    for (j = k + 1; j < N; ++j) {
-      arg[j].i = i;
-      arg[j].j = j;
-      arg[j].k = k;
-      arg[j].A = A;
-      pthread_create(&thread[j], NULL, divisionWorker, (void *)(arg+j));
+    for (int t = 0; t < numberOfThreads; ++t) {
+      arg[t].jStart = (t * elementsPerThread) + (k + 1);
+      arg[t].count = elementsPerThread;
+      arg[t].k = k;
+      arg[t].A = A;
+      arg[t].N = N;
+      arg[t].threadIndex = t;
+      pthread_create(&thread[t], NULL, divisionWorker, (void *)(arg+t));
     }
-    for (j = k + 1; j < N; ++j) {
-      pthread_join(thread[j], NULL);
+    for (int t = 0; t < numberOfThreads; ++t) {
+      pthread_join(thread[t], NULL);
     }
 
     y[k] = b[k] / A[k][k];
