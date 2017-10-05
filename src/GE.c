@@ -96,9 +96,9 @@ void backSub(double **U, double *x, double *y, int N) {
 
 int main(int argc, char *argv[]) {
   /* Validate arguments */
-  if (argc != 3) {
+  if (argc != 2) {
     printf("Error: 2 arguments expected.\n");
-    printf("Usage: ./GE <input> <thread_count>\n");
+    printf("Usage: ./GE <input>\n");
     exit(1);
   }
 
