@@ -1,5 +1,20 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <pthread.h>
+
+typedef struct {
+  int i;
+  int j;
+  int k;
+  double **A;
+} threadData_t;
+
+void * divisionWorker(void *arg) {
+  threadData_t *td = (threadData_t *)arg;
+  
+  /* A[k][j] = A[k][j] / A[k][k]; */             
+  td->A[td->k][td->j] = td->A[td->k][td->j] / td->A[td->k][td->k];
+}
 
 void print1Darray(double *X, int N) {
 	for (int j = 0; j < N; ++j) {
@@ -20,11 +35,21 @@ void print2Darray(double **X, int N) {
 
 void ge(double **A, double *b, double *y, int N) {
   int i, j, k;
+  pthread_t *thread = (pthread_t *)malloc(N * sizeof(pthread_t));
+  threadData_t *arg = (threadData_t *)malloc(N * sizeof(pthread_t));
+
   /* begin */
   for (k = 0; k < N; ++k) {                     /* Outer loop */
     /* begin */
     for (j = k + 1; j < N; ++j) {
-      A[k][j] = A[k][j] / A[k][k];              /* Division step */
+      arg[j].i = i;
+      arg[j].j = j;
+      arg[j].k = k;
+      arg[j].A = A;
+      pthread_create(&thread[j], NULL, divisionWorker, (void *)(arg+j));
+    }
+    for (j = k + 1; j < N; ++j) {
+      pthread_join(thread[j], NULL);
     }
 
     y[k] = b[k] / A[k][k];
