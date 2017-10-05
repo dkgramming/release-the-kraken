@@ -1,6 +1,9 @@
 ### Data ###
 data/*.txt
 
+### Swap Files ###
+*.swp
+
 # Created by https://www.gitignore.io/api/c
 
 ### C ###
