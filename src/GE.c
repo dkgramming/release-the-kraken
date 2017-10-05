@@ -17,8 +17,6 @@ void * divisionWorker(void *arg) {
   
   for (int j=td->jStart; j < td->N && j < (td->jStart+td->count); ++j) {
     /* A[k][j] = A[k][j] / A[k][k]; */             
-    printf("[Thread %d] ", td->threadIndex);
-    printf("A[%d][%d] = A[%d][%d] / A[%d][%d]\n", td->k, j, td->k, j, td->k, td->k);
     td->A[td->k][j] = td->A[td->k][j] / td->A[td->k][td->k];
   }
 }
