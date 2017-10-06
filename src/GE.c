@@ -3,33 +3,33 @@
 #include <pthread.h>
 
 typedef struct {
-  int i;
-  int jStart;
+  int threadID;
+  int threadCount;
   int k;
   int N;
-  int count;
-  int threadIndex;
+  double *b;
+  double *y;
   double **A;
 } threadData_t;
 
-void * divisionWorker(void *arg) {
-  threadData_t *td = (threadData_t *)arg;
-  
-  for (int j=td->jStart; j < td->N && j < (td->jStart+td->count); ++j) {
-    /* A[k][j] = A[k][j] / A[k][k]; */             
-    td->A[td->k][j] = td->A[td->k][j] / td->A[td->k][td->k];
-  }
-}
-
 void * eliminationWorker(void *arg) {
   threadData_t *td = (threadData_t *)arg;
-  
-  for (int j=td->jStart; j < td->N && j < (td->jStart+td->count); ++j) {
-    /* A[i][j] = A[i][j] - A[i][k] * A[k][j]; */
-    td->A[td->i][j] = td->A[td->i][j] - 
-                      td->A[td->i][td->k] * td->A[td->k][j];
-  }
+  int k = td->k;
+  int threadID = td->threadID;
+  double *b = td->b;
+  double *y = td->y;
+  double **A = td->A;
+  int N = td->N;
+  int threadCount = td->threadCount;
 
+  for (int row = threadID + (k + 1); row < N; row += threadCount) {
+    for (int col = k + 1; col < N; ++col) {
+      A[row][col] = A[row][col] - A[row][k] * A[k][col];  /* Elimination step */
+    }
+
+    b[row] = b[row] - A[row][k] * y[k];
+    A[row][k] = 0;
+  }
 }
 
 void print1Darray(double *X, int N) {
@@ -50,7 +50,9 @@ void print2Darray(double **X, int N) {
 }
 
 void ge(double **A, double *b, double *y, int N, int t) {
-  int i, j, k;
+  int j, k;
+  pthread_t *thread = (pthread_t *)malloc(t * sizeof(pthread_t));
+  threadData_t *arg = (threadData_t *)malloc(t * sizeof(threadData_t));
   /* begin */
   for (k = 0; k < N; ++k) {                     /* Outer loop */
     /* begin */
@@ -61,14 +63,19 @@ void ge(double **A, double *b, double *y, int N, int t) {
     y[k] = b[k] / A[k][k];
     A[k][k] = 1;
 
-    for (i = k + 1; i < N; ++i) {
-    /* begin */
-      for (j = k + 1; j < N; ++j) {
-        A[i][j] = A[i][j] - A[i][k] * A[k][j];  /* Elimination step */
-      }
+    for (int x = 0; x < t; ++x) {
+      arg[x].k = k;
+      arg[x].threadID = x;
+      arg[x].threadCount = t;
+      arg[x].b = b;
+      arg[x].y = y;
+      arg[x].A = A;
+      arg[x].N = N;
 
-      b[i] = b[i] - A[i][k] * y[k];
-      A[i][k] = 0;
+      pthread_create(&thread[x], NULL, eliminationWorker, (void *)(arg+x));
+    }
+    for (int x = 0; x < t; ++x) {
+      pthread_join(thread[x], NULL);
     }
   }                                             /* Outer loop */
 }
